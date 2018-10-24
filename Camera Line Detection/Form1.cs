@@ -1,14 +1,7 @@
 ﻿using AForge.Video;
 using AForge.Video.DirectShow;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Camera_Line_Detection {
@@ -39,13 +32,15 @@ namespace Camera_Line_Detection {
 			// process the frame
 
 
-			Image clonedImg = MakeGrayscale3(sourceImg);
+			Image scaledImg = resizeImage(sourceImg, new Size(400, 400));
+			scaledImg = MakeGrayscale3((Bitmap)scaledImg);
 			pictureBox1.InitialImage = null;
-			pictureBox1.Image = clonedImg;
+			pictureBox1.Image = scaledImg;
 			//pictureBox1.Image = (Image)bitmap;
 		}
 
 		public void DetectLine(Bitmap bitmap) {
+			//Get scale of colors
 			float MaxValue = 0;
 			float MinValue = int.MaxValue;
 			for (int y = 0; y < bitmap.Size.Height; y++) {
@@ -58,6 +53,30 @@ namespace Camera_Line_Detection {
 					}
 				}
 			}
+
+			//Determen which pixels are black and white
+			//			Threshold = .24 // use experimentation to determine this value
+			//if pixel(x, y) < (MaxActualValue - MinActualValue) * Threshold + MinActualValue then
+			//  pixel(x, y) = black
+			//else
+			//  pixel(x, y) = white
+			float threshold = .24f;
+			float thing = (MaxValue - MinValue) * threshold + MinValue;
+			for (int y = 0; y < bitmap.Size.Height; y++) {
+				for (int x = 0; x < bitmap.Size.Width; x++) {
+					if (bitmap.GetPixel(x, y).GetBrightness() > thing) {
+
+					}
+				}
+			}
+		}
+
+		public static Image resizeImage(Image sourceImage, Size newSize) {
+			Image newImage = new Bitmap(newSize.Width, newSize.Height);
+			using (Graphics GFX = Graphics.FromImage((Bitmap)newImage)) {
+				GFX.DrawImage(sourceImage, new Rectangle(Point.Empty, newSize));
+			}
+			return newImage;
 		}
 
 		public static Bitmap MakeGrayscale3(Bitmap original) {
